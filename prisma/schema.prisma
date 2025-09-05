@@ -1,0 +1,75 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Profile {
+  id           Int      @id @default(autoincrement())
+  name         String
+  email        String   @unique
+  education    String?
+  githubUrl    String?  @map("github_url")
+  linkedinUrl  String?  @map("linkedin_url")
+  portfolioUrl String?  @map("portfolio_url")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  skills         Skill[]
+  projects       Project[]
+  workExperience WorkExperience[]
+
+  @@map("profiles")
+}
+
+model Skill {
+  id               Int      @id @default(autoincrement())
+  profileId        Int      @map("profile_id")
+  skillName        String   @map("skill_name")
+  proficiencyLevel Int      @default(1) @map("proficiency_level")
+  createdAt        DateTime @default(now()) @map("created_at")
+
+  profile Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@map("skills")
+  @@index([skillName])
+  @@index([profileId])
+}
+
+model Project {
+  id          Int      @id @default(autoincrement())
+  profileId   Int      @map("profile_id")
+  title       String
+  description String?
+  links       Json?    // Array of link objects
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  profile Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@map("projects")
+  @@index([profileId])
+}
+
+model WorkExperience {
+  id          Int      @id @default(autoincrement())
+  profileId   Int      @map("profile_id")
+  company     String
+  position    String
+  startDate   String?  @map("start_date")
+  endDate     String?  @map("end_date")
+  description String?
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  profile Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@map("work_experience")
+  @@index([profileId])
+}
